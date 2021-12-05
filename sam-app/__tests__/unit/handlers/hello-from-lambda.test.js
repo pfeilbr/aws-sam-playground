@@ -57,9 +57,9 @@ describe("Test for hello-from-lambda", function () {
     expect(JSON.parse(resp.Payload)).toEqual("hello from jest test")
     
 
-    const msg = "hello from local unit test"
-    const result = await lambda.helloFromLambdaHandler({msg});
-    const expectedResult = msg;
-    expect(result).toEqual(expectedResult);
+    // const msg = "hello from local unit test"
+    // const result = await lambda.helloFromLambdaHandler({msg});
+    // const expectedResult = msg;
+    // expect(result).toEqual(expectedResult);
   });
 });
