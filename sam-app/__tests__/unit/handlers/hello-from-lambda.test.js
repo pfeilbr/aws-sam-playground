@@ -1,14 +1,9 @@
-// Import all functions from hello-from-lambda.js
 const AWS = require("aws-sdk");
 const lambda = require("../../../src/handlers/hello-from-lambda.js");
 
 const sleep = (secs) =>
   new Promise((resolve) => setTimeout(resolve, 1000 * secs));
 
-/**
- * Get stack name from environment variable AWS_SAM_STACK_NAME and make an API call to verify the stack exists.
- * throw exception if AWS_SAM_STACK_NAME is not set.
- */
 const getAndVerifyStackName = async () => {
   const stackName = process.env["AWS_SAM_STACK_NAME"];
   if (!stackName) {
@@ -35,9 +30,7 @@ const getAndVerifyStackName = async () => {
   return stackName;
 };
 
-// This includes all tests for helloFromLambdaHandler()
 describe("Test for hello-from-lambda", function () {
-  // This test invokes helloFromLambdaHandler() and compare the result
   it("Verifies successful response", async () => {
 
     const stackName = await getAndVerifyStackName();

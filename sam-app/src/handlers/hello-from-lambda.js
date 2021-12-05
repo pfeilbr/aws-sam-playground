@@ -1,18 +1,22 @@
-/**
- * A Lambda function that returns a static string
- */
+const AWS = require("aws-sdk")
+const uuid = require("uuid");
 
 const l = (o) => {
     console.log(JSON.stringify(o, null, 2))
 }
 
 exports.helloFromLambdaHandler = async (event) => {
-    // If you change this message, you will need to change hello-from-lambda.test.js
-    l({event})
-    const message = event.msg || 'Hello from Lambda!';
+    l({event, env: process.env})
+    const bucketName = process.env.S3_BUCKET_NAME
 
-    // All log statements are written to CloudWatch
+    if (bucketName) {
+        const s3 = new AWS.S3()
+        await s3.putObject({Bucket: bucketName, Key: `${uuid.v4()}`}).promise()
+        const resp = await s3.listObjectsV2({Bucket: bucketName}).promise()
+        l({resp});
+    }
+
+    const message = event.msg || 'Hello from Lambda!';
     console.info(`${message}`);
-    
     return message;
 }
