@@ -1,27 +1,22 @@
-# This is the SAM template that represents the architecture of your serverless application
-# https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-template-basics.html
-
-# The AWSTemplateFormatVersion identifies the capabilities of the template
-# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/format-version-structure.html
 AWSTemplateFormatVersion: 2010-09-09
 Description: >-
   sam-app
 
-# Transform section specifies one or more macros that AWS CloudFormation uses to process your template
-# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/transform-section-structure.html
 Transform:
   - AWS::Serverless-2016-10-31
 
-# Resources declares the AWS resources that you want to include in the stack
-# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resources-section-structure.html
-Resources:
-  # Each Lambda function is defined by properties:
-  # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+Parameters:
+  EmailSubscriber:
+    Description:  "" 
+    Type: String
+    Default: "brian.pfeil@gmail.com"
 
-  # This is a Lambda function config associated with the source code: hello-from-lambda.js
+Resources:
+
   helloFromLambdaFunction:
     Type: AWS::Serverless::Function
     Properties:
+      CodeUri: src/handlers
       Handler: src/handlers/hello-from-lambda.helloFromLambdaHandler
       Runtime: nodejs14.x
       Architectures:
@@ -32,10 +27,23 @@ Resources:
       Role: !GetAtt  lambdaRole.Arn
       Environment:
         Variables:
-          S3_BUCKET_NAME: !Ref s3Bucket      
+          S3_BUCKET_NAME: !Ref s3Bucket
+          MY_SNS_TOPIC_ARN: !Ref mySnsEmailTopic
+          MY_SNS_TOPIC_NAME: !GetAtt mySnsEmailTopic.TopicName
+          MY_QUEUE_URL: !Ref myQueue
+          MY_QUEUE_ARN: !GetAtt myQueue.Arn
+          MY_QUEUE_NAME: !GetAtt  myQueue.QueueName
 
   s3Bucket:
     Type: AWS::S3::Bucket
+    Properties:
+      VersioningConfiguration:
+        Status: Enabled 
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: 'AES256'
+
 
   lambdaRole:
     Type: AWS::IAM::Role
@@ -64,3 +72,12 @@ Resources:
                 Action: "s3:*"
                 Resource: !Sub "arn:aws:s3:::${s3Bucket}/*"
 
+  myQueue:
+    Type: AWS::SQS::Queue
+
+  mySnsEmailTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      Subscription:
+        - Endpoint: !Ref EmailSubscriber
+          Protocol: email
