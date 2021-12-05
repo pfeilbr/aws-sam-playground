@@ -16,7 +16,11 @@ exports.helloFromLambdaHandler = async (event) => {
         l({resp});
     }
 
+    const sns = new AWS.SNS();
+    const TopicArn = process.env.MY_SNS_TOPIC_ARN
+    const snsPublishResp = await sns.publish({TopicArn, Message: "hello sns"}).promise()
+    l({snsPublishResp})
+
     const message = event.msg || 'Hello from Lambda!';
-    console.info(`${message}`);
     return message;
 }

@@ -25,6 +25,7 @@ Resources:
       Timeout: 100
       Description: A Lambda function that returns a static string.
       Role: !GetAtt  lambdaRole.Arn
+      Tracing: Active
       Environment:
         Variables:
           S3_BUCKET_NAME: !Ref s3Bucket
@@ -60,6 +61,7 @@ Resources:
       Path: "/"
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
       Policies:
         - PolicyName: "root"
           PolicyDocument:
@@ -71,6 +73,12 @@ Resources:
               - Effect: "Allow"
                 Action: "s3:*"
                 Resource: !Sub "arn:aws:s3:::${s3Bucket}/*"
+              - Effect: "Allow"
+                Action: "sns:*"
+                Resource: !Ref mySnsEmailTopic
+              - Effect: "Allow"
+                Action: "sqs:*"
+                Resource: !Sub "${myQueue.Arn}"
 
   myQueue:
     Type: AWS::SQS::Queue
